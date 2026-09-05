@@ -23,7 +23,11 @@
 %xl(vb_backdrop,vb_backdrop.bmp,0,0)
 %xl(speaker_loud,speaker_loud.bmp,285,1)
 
-%xl(K,playback_modes_musicOS_final.bmp,0,0,10)
+# Playback-mode sprite - unused since GENRE replaced the playback-modes viewport
+#%xl(K,playback_modes_musicOS_final.bmp,0,0,10)
+
+# Star rating strip (frame 0 = 5 greyed-out stars / unrated, frames 1..10 = rating 1..10)
+%xl(L,stars.bmp,0,0,11)
 
 
 # ==================================================
@@ -38,6 +42,17 @@
 
 # Lock state
 %?mh<%Vd(locked)>
+
+# Lossless badge - shown only for lossless codecs
+%?if(%fc, =, FLAC)<%Vd(lossless)>
+%?if(%fc, =, ALAC)<%Vd(lossless)>
+%?if(%fc, =, WV)<%Vd(lossless)>
+%?if(%fc, =, APE)<%Vd(lossless)>
+%?if(%fc, =, TTA)<%Vd(lossless)>
+%?if(%fc, =, SHN)<%Vd(lossless)>
+%?if(%fc, =, WAV)<%Vd(lossless)>
+%?if(%fc, =, AIFF)<%Vd(lossless)>
+%?if(%fc, =, WAVE64)<%Vd(lossless)>
 
 
 # ==================================================
@@ -187,34 +202,76 @@
 # TRACK TITLE
 # ==================================================
 
-%V(176,50,136,28,3)
+%V(176,50,136,26,3)
 %Vf(000000)
 %Vb(FFFFFF)
 %s%?it<%it|Unknown Title>
 
 
 # ==================================================
+# ALBUM
+# (hidden when the track has no album tag)
+# ==================================================
+
+%V(176,76,136,16,2)
+%Vf(6F6F6F)
+%Vb(FFFFFF)
+%s%?id<%id>
+
+
+# ==================================================
 # ARTIST
 # ==================================================
 
-%V(176,80,136,22,4)
+%V(176,92,136,22,4)
 %Vf(F24E61)
 %Vb(FFFFFF)
 %s%?ia<%ia|Unknown Artist>
 
 
 # ==================================================
-# LOSSLESS
+# GENRE
+# (hidden when the track has no genre tag)
 # ==================================================
 
-%V(176,108,89,20,-)
+%V(176,114,136,14,2)
+%Vf(6F6F6F)
+%Vb(FFFFFF)
+%s%?ig<%ig>
+
+
+# ==================================================
+# ALBUM YEAR / BITRATE
+# (year hidden when unset or 0000; bitrate hidden when unknown)
+# year: take the first 4 chars so "1999-01-01 11:11" -> "1999"
+# ==================================================
+
+%V(176,128,136,14,2)
+%Vf(6F6F6F)
+%Vb(FFFFFF)
+%?if(%iy, >, 0)<%ss(0,4,%iy) • >%?if(%fb, >, 0)<%fb kbps>
+
+
+# ==================================================
+# LOSSLESS - shown via LOGIC for lossless codecs only
+# (FLAC, ALAC, WavPack, APE, TTA, Shorten, WAV, AIFF, Wave64)
+# ==================================================
+
+%Vl(lossless,197,170,89,20,-)
 %xd(Ha)
 
 
 # ==================================================
-# PLAYBACK MODES
+# STAR RATING - CURRENT TRACK
+# frame La = 5 greyed-out stars, always drawn as the background, so an
+# unrated track (or database / "Gather runtime data" disabled) shows
+# just the greyed-out stars. %?rr then paints the rated frame
+# (Lb = rating 1 ... Lk = rating 10) on top when a rating exists.
 # ==================================================
 
-%V(183,156,127,37,-)
+%V(186,144,112,20,2)
+%Vf(000000)
+%Vb(FFFFFF)
+%xd(La)
+%?rr<%xd(La)|%xd(Lb)|%xd(Lc)|%xd(Ld)|%xd(Le)|%xd(Lf)|%xd(Lg)|%xd(Lh)|%xd(Li)|%xd(Lj)|%xd(Lk)>
 
-%?if(%ps, =, s)<%?mm<%xd(Kb)|%xd(Kd)|%xd(Kf)|%xd(Kh)|%xd(Kj)>|%?mm<%xd(Ka)|%xd(Kc)|%xd(Ke)|%xd(Kg)|%xd(Ki)>>
