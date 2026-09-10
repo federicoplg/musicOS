@@ -29,30 +29,35 @@
 # 3 = high
 %xl(BG,brightness_glyphs.bmp,0,0,3)
 
-# Home screen backdrop
+# Home screen backdrop (has the playback-row card at the bottom)
 %xl(HomeBG,musicOS_homescreen_backdrop.bmp,0,0)
+
+# Plain backdrop - used when the playback row is hidden so the list
+# can fill the screen without the card showing through
+%xl(MenuBG,musicOS_menu_backdrop.bmp,0,0)
 
 %xl(SH,musicOS_shuffle_sprite.bmp,0,0,2)
 %xl(RP,musicOS_repeat_sprite.bmp,0,0,5)
-
-# Home Play / Pause
-# 1 = Play
-# 2 = Pause
-%xl(PP,musicOS_playback.bmp,0,0,2)
 
 
 # ==================================================
 # BACKDROP LAYER
 # ==================================================
 
-# Quick Screen = q
-# Home / normal screens = a
+# Quick Screen  = q
+# Playing (row visible) = a (card backdrop)
+# Not playing (row hidden, full list) = b (plain backdrop)
+# %?mp = stop | play | pause(+ff/rw)
 
-%?if(%cs, =, 10)<%Vd(q)|%Vd(a)>
+%?if(%cs, =, 10)<%Vd(q)|%?mp<%Vd(b)|%Vd(a)|%Vd(b)>>
 
 %Vl(a,0,0,320,240,-)
 %VB
 %xd(HomeBG)
+
+%Vl(b,0,0,320,240,-)
+%VB
+%xd(MenuBG)
 
 %Vl(q,0,0,320,240,-)
 %VB
@@ -72,16 +77,22 @@
 # UI VIEWPORTS
 # ==================================================
 
-# Normal Rockbox interface
+# List area - short, leaves room for the playback status row (while playing)
 %Vi(Normal,10,29,300,141,4)
+%Vf(000000)
+%Vb(FFFFFF)
+
+# List area - full height, used when the playback status row is hidden
+%Vi(Full,10,29,300,205,4)
 %Vf(000000)
 %Vb(FFFFFF)
 
 # Hide native Quick Screen
 %Vi(Empty,319,239,1,1,-)
 
-# Normal screens
-%?if(%cs, !=, 10)<%Vd(i)%VI(Normal)>
+# Normal screens: Normal list only while a track is playing (row visible),
+# otherwise the full-height list. %?mp = stop | play | pause(+ff/rw).
+%?if(%cs, !=, 10)<%Vd(i)%?mp<%VI(Full)|%VI(Normal)|%VI(Full)>>
 
 # Custom Quick Screen
 %?if(%cs, =, 10)<%VI(Empty)>
@@ -103,38 +114,41 @@
 
 %?if(%cs, !=, 10)<%Vd(f)%Vd(g)>
 
+# Playback status row (album art + title + album/artist):
+# shown only while a track is actually playing - hidden when
+# paused, stopped or nothing is loaded. %?mp options are
+# stop | play | pause(+ff/rw), so only the "play" slot displays it.
+# haa (album art) additionally needs %?C = art actually available.
+# %cs != 2 excludes the WPS: the row must stay hidden there so that
+# entering a list screen is a real hide->show transition for haa,
+# which is what makes the STATIC %Cd tag repaint the album art.
+%?if(%cs, !=, 2)<%?if(%cs, !=, 10)<%?mp<|%Vd(htt)%Vd(hai)%?C<%Vd(haa)>|>>>
+
 # ==================================================
 # HOME ALBUM ART
 # ==================================================
 
-%V(20,182,42,42,-)
-%?if(%cs, !=, 10)<%Cl(0,0,42,42,c,c)%Cd>
+%Vl(haa,20,182,42,42,-)
+%Cl(0,0,42,42,c,c)
+%Cd
 
 # ==================================================
 # HOME TRACK TITLE
 # ==================================================
 
-%V(69,186,130,18,3)
+%Vl(htt,69,186,231,18,3)
 %Vf(000000)
 %Vb(FFFFFF)
-%?if(%cs, !=, 10)<%s%al%?mp<Not Playing|%?it<%it|%fn>|%?it<%it|%fn>|%?it<%it|%fn>|%?it<%it|%fn>>>
+%s%al%?it<%it|%fn>
 
 # ==================================================
 # HOME ALBUM / ARTIST
 # ==================================================
 
-%V(70,202,130,18,2)
+%Vl(hai,70,202,230,18,2)
 %Vf(F24E61)
 %Vb(FFFFFF)
-%?if(%cs, !=, 10)<%s%al%?mp<|%?id<%id|-> - %?ia<%ia|->|%?id<%id|-> - %?ia<%ia|->|%?id<%id|-> - %?ia<%ia|->|%?id<%id|-> - %?ia<%ia|->>>
-
-
-# ==================================================
-# HOME PLAY / PAUSE
-# ==================================================
-
-%V(243,191,18,21,-)
-%?if(%cs, !=, 10)<%?mp<%xd(PP,2)|%xd(PP,1)|%xd(PP,2)|%xd(PP,1)|%xd(PP,1)>>
+%s%al%?id<%id|-> - %?ia<%ia|->
 
 
 # ==================================================
